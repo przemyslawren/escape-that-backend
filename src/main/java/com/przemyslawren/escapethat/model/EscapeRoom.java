@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,13 +36,13 @@ public class EscapeRoom extends BaseEntity {
     private boolean hasActor;
 
     // normal association bidirectional
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Address address;
 
     @OneToMany(mappedBy = "escapeRoom", fetch = FetchType.LAZY)
     private List<Review> reviews;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private RoomTheme roomTheme;
 
     //association qualified
@@ -53,7 +54,7 @@ public class EscapeRoom extends BaseEntity {
     @OneToMany(mappedBy = "escapeRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Assignment> assignments = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "escape_room_safety_requirements",
             joinColumns = @JoinColumn(name = "escape_room_id"))
@@ -63,4 +64,13 @@ public class EscapeRoom extends BaseEntity {
     @Embedded
     private PlayerRange playerRange;
     private int basePrice;
+
+    @Transient
+    private boolean isNew = false;
+
+    @Transient
+    private boolean isUpdated = false;
+    @Transient
+
+    private boolean isDeleted = false;
 }

@@ -11,10 +11,10 @@ import com.przemyslawren.escapethat.repository.EscapeRoomRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,47 +28,55 @@ public class EscapeRoomService {
     private final EscapeRoomSimpleMapper escapeRoomSimpleMapper;
     private final EscapeRoomDetailMapper escapeRoomDetailMapper;
 
-    private List<EscapeRoom> cache;
-    private final List<EscapeRoom> newRoomsCache = new ArrayList<>();
-    private final List<EscapeRoom> updatedRoomsCache = new ArrayList<>();
-    private final Set<Long> deletedRoomIdsCache = new HashSet<>();
+    private List<EscapeRoom> extent;
 
     @PostConstruct
     public void loadCache() {
-        cache = escapeRoomRepository.findAll();
+        extent = escapeRoomRepository.findAll();
     }
 
     @PreDestroy
     @Transactional
     public void saveCache() {
-        List<EscapeRoom> updatedRooms = getUpdatedRoomsCache();
-        List<EscapeRoom> newRooms = getNewRoomsCache();
-        Set<Long> idsToDelete = getDeletedRoomIdsCache();
+        // Zapisz nowe pokoje
+        List<EscapeRoom> newRooms = extent.stream()
+                .filter(EscapeRoom::isNew)
+                .toList();
+        for (EscapeRoom room : newRooms) {
+            room.setId(null); // Ensure the ID is null so it will be generated
+        }
+        escapeRoomRepository.saveAll(newRooms);
 
-        if (!idsToDelete.isEmpty()) {
-            escapeRoomRepository.deleteAllById(idsToDelete); // Only delete specified ids
-        }
-        if (!updatedRooms.isEmpty()) {
-            escapeRoomRepository.saveAll(updatedRooms);  // Only save modified entries
-        }
-        if (!newRooms.isEmpty()) {
-            escapeRoomRepository.saveAll(newRooms);  // Only save new entries
-        }
+        // Zapisz zaktualizowane pokoje
+        List<EscapeRoom> updatedRooms = extent.stream()
+                .filter(EscapeRoom::isUpdated)
+                .collect(Collectors.toList());
+        escapeRoomRepository.saveAll(updatedRooms);
+
+        // Usuń pokoje
+        List<Long> deletedRoomIds = extent.stream()
+                .filter(EscapeRoom::isDeleted)
+                .map(EscapeRoom::getId)
+                .collect(Collectors.toList());
+        escapeRoomRepository.deleteAllById(deletedRoomIds);
+
+        escapeRoomRepository.flush();
     }
 
     public EscapeRoomDetailDto createEscapeRoom(EscapeRoomDetailDto escapeRoomDetailDto) {
         EscapeRoom escapeRoom = escapeRoomDetailMapper.toEntity(escapeRoomDetailDto);
-        newRoomsCache.add(escapeRoom);
-
+        escapeRoom.setNew(true);
+        escapeRoom.setId(null);
+        extent.add(escapeRoom);
         return escapeRoomDetailMapper.toDto(escapeRoom);
     }
 
     public List<EscapeRoomSimpleDto> getAllEscapeRooms() {
-       return escapeRoomSimpleMapper.toDtoList(cache);
+       return escapeRoomSimpleMapper.toDtoList(extent);
     }
 
     public List<EscapeRoomSimpleDto> getAllEscapeRooms(DifficultyLevel difficultyLevel) {
-        List<EscapeRoom> escapeRooms = cache.stream()
+        List<EscapeRoom> escapeRooms = extent.stream()
                 .filter(e -> e.getDifficultyLevel().equals(difficultyLevel))
                 .toList();
 
@@ -76,7 +84,7 @@ public class EscapeRoomService {
     }
 
     public EscapeRoomDetailDto getDetailEscapeRoom(Long id) {
-        EscapeRoom escapeRoom = cache.stream()
+        EscapeRoom escapeRoom = extent.stream()
                 .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new EscapeRoomNotFoundException(id));
@@ -86,16 +94,16 @@ public class EscapeRoomService {
 
     @Transactional
     public void deleteEscapeRoom(Long id) {
-        EscapeRoom escapeRoom = cache.stream()
+        EscapeRoom escapeRoom = extent.stream()
                 .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new EscapeRoomNotFoundException(id));
 
-        deletedRoomIdsCache.add(escapeRoom.getId());
+        escapeRoom.setDeleted(true);
     }
 
     public int getPrice(Long id) {
-        EscapeRoom escapeRoom = cache.stream()
+        EscapeRoom escapeRoom = extent.stream()
                 .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new EscapeRoomNotFoundException(id));
@@ -108,5 +116,19 @@ public class EscapeRoomService {
         double basePrice = getPrice(id);
 
         return (int) ((basePrice * rate) * numberOfPlayers);
+    }
+
+    public EscapeRoomDetailDto updateEscapeRoom(Long id, EscapeRoomDetailDto escapeRoomDetailDto) {
+        EscapeRoom updatedEscapeRoom = escapeRoomDetailMapper.toEntity(escapeRoomDetailDto);
+        EscapeRoom existingEscapeRoom = extent.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new EscapeRoomNotFoundException(id));
+        existingEscapeRoom.setUpdated(true);
+        extent.remove(existingEscapeRoom);
+        updatedEscapeRoom.setId(id);
+        extent.add(updatedEscapeRoom);
+
+        return escapeRoomDetailMapper.toDto(updatedEscapeRoom);
     }
 }
