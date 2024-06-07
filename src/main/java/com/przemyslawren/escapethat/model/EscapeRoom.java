@@ -10,6 +10,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
@@ -26,7 +29,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class EscapeRoom extends BaseEntity {
+public class EscapeRoom {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
 
     private String name;
     private String description;
@@ -39,19 +46,27 @@ public class EscapeRoom extends BaseEntity {
     @ManyToOne
     private Address address;
 
-    @OneToMany(mappedBy = "escapeRoom", fetch = FetchType.LAZY)
+    @OneToMany(
+            mappedBy = "escapeRoom",
+            fetch = FetchType.LAZY, cascade = CascadeType.PERSIST,
+            orphanRemoval = true)
     private List<Review> reviews;
 
     @ManyToOne
     private RoomTheme roomTheme;
 
     //association qualified
-    @OneToMany
+    @OneToMany(
+            mappedBy = "escapeRoom",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @MapKey(name = "startTime")
     private Map<LocalDateTime, BookSlot> bookSlots = new HashMap<>();
 
     // composition
-    @OneToMany(mappedBy = "escapeRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "escapeRoom",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Assignment> assignments = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -70,7 +85,7 @@ public class EscapeRoom extends BaseEntity {
 
     @Transient
     private boolean isUpdated = false;
-    @Transient
 
+    @Transient
     private boolean isDeleted = false;
 }

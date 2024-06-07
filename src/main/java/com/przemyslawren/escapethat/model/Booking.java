@@ -2,6 +2,9 @@ package com.przemyslawren.escapethat.model;
 
 import com.przemyslawren.escapethat.model.enums.BookingStatus;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -11,7 +14,12 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Booking extends BaseEntity { // association with attributes
+public class Booking { // association with attributes
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
+
     private BookingStatus status;
 
     @ManyToOne
