@@ -13,6 +13,6 @@ public class Assistant extends Employee {
     private String tasksPerformed;
 
     @OneToOne
-    @JoinColumn(name = "actor_id") // Assistant can be an actor, overlapping
+    @JoinColumn(name = "actor_id")
     private Actor actor;
 }

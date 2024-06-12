@@ -11,7 +11,7 @@ public record EscapeRoomDetailDto(
         boolean hasActor,
         AddressDto address,
         RoomThemeDto roomTheme,
-        List<String> safetyRequirements,
+        String safetyRequirements,
         PlayerRangeDto playerRange,
         int basePrice
 ) {}
