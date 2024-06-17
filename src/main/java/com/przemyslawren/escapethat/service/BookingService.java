@@ -58,21 +58,6 @@ public class BookingService {
         }
     }
 
-    @Transactional
-    public Booking createBooking(Long escapeRoomId, Long customerId, LocalDateTime startTime) {
-        EscapeRoom escapeRoom = escapeRoomRepository.findById(escapeRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("EscapeRoom not found"));
-
-        int slotNumber = generateUniqueSlotNumber(escapeRoom, startTime);
-
-        Booking booking = new Booking();
-        booking.setEscapeRoom(escapeRoom);
-        booking.setStartTime(startTime);
-        booking.setSlotNumber(slotNumber);
-
-        return bookingRepository.save(booking);
-    }
-
     private int generateUniqueSlotNumber(EscapeRoom escapeRoom, LocalDateTime startTime) {
         Optional<Integer> slotNumberOpt = bookingRepository.findSlotNumberByEscapeRoomAndStartTime(escapeRoom, startTime);
         return slotNumberOpt.orElseThrow(() -> new IllegalArgumentException("Slot number not found for the given start time"));

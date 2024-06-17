@@ -3,19 +3,23 @@ package com.przemyslawren.escapethat.controller;
 import com.przemyslawren.escapethat.model.Booking;
 import com.przemyslawren.escapethat.service.BookingService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/bookings")
+@RequiredArgsConstructor
 public class BookingController {
-
-    @Autowired
-    private BookingService bookingService;
+    private final BookingService bookingService;
 
     @GetMapping("/escape-room/{escapeRoomId}/slot/{slotNumber}/start-time")
     public ResponseEntity<Booking> getBookingByEscapeRoomIdAndSlotNumberAndStartTime(@PathVariable Long escapeRoomId, @PathVariable int slotNumber, @RequestParam LocalDateTime startTime) {
@@ -25,7 +29,8 @@ public class BookingController {
     }
 
     @GetMapping("/escape-room/{escapeRoomId}/slot/{slotNumber}/date/{date}")
-    public ResponseEntity<List<Booking>> getBookingsBySlotNumberAndDate(@PathVariable Long escapeRoomId, @PathVariable int slotNumber, @PathVariable LocalDate date) {
+    public ResponseEntity<List<Booking>> getBookingsBySlotNumberAndDate(@PathVariable Long escapeRoomId, @PathVariable int slotNumber, @PathVariable
+    LocalDate date) {
         List<Booking> bookings = bookingService.findBookingsBySlotNumberAndDate(escapeRoomId, slotNumber, date);
         if (bookings.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -37,15 +42,5 @@ public class BookingController {
     public ResponseEntity<?> generateDailySlots(@RequestParam Long escapeRoomId, @RequestParam LocalDate date) {
         bookingService.generateDailySlots(escapeRoomId, date);
         return ResponseEntity.ok("Daily slots generated successfully");
-    }
-
-    @PostMapping
-    public ResponseEntity<?> createBooking(@RequestParam Long escapeRoomId, @RequestParam Long customerId, @RequestParam LocalDateTime startTime) {
-        try {
-            Booking booking = bookingService.createBooking(escapeRoomId, customerId, startTime);
-            return ResponseEntity.ok(booking);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 }

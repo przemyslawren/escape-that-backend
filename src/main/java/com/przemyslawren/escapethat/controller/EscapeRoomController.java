@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/escape-rooms")
 @RequiredArgsConstructor
-@CrossOrigin
 public class EscapeRoomController {
 
     private final EscapeRoomService escapeRoomService;
