@@ -2,6 +2,8 @@ package com.przemyslawren.escapethat.controller;
 
 import com.przemyslawren.escapethat.dto.LoginRequestDto;
 import com.przemyslawren.escapethat.service.AuthService;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +28,12 @@ public class AuthController {
         Authentication authentication = authService.authenticate(loginRequestDto);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return ResponseEntity.ok(userDetails);
+        // Assuming your UserDetails implementation has a method to get the role
+        String role = userDetails.getAuthorities().stream().findFirst().get().getAuthority();
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", userDetails);
+        response.put("role", role);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/check-auth")

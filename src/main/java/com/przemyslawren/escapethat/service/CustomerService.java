@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -63,6 +66,31 @@ public class CustomerService {
         Customer customer = customerExtent
                 .stream()
                 .filter(c -> c.getId().equals(customerId)).findAny()
+                .orElseThrow(() -> new EscapeRoomRuntimeException(
+                        "Customer not found",
+                        ErrorCode.CUSTOMER_NOT_FOUND,
+                        HttpStatus.BAD_REQUEST));
+
+        return customer.getBookings().stream()
+                .map(bookingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookingDto> getAuthenticatedCustomerBookings() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new EscapeRoomRuntimeException(
+                    "Customer not authenticated",
+                    ErrorCode.CUSTOMER_NOT_AUTHENTICATED,
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername();
+
+        Customer customer = customerExtent
+                .stream()
+                .filter(c -> c.getEmail().equals(email)).findAny()
                 .orElseThrow(() -> new EscapeRoomRuntimeException(
                         "Customer not found",
                         ErrorCode.CUSTOMER_NOT_FOUND,
