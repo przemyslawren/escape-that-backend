@@ -24,6 +24,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
         Authentication authentication = authService.authenticate(loginRequestDto);
+        if (authentication == null) {
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String role = userDetails.getAuthorities().stream().findFirst().get().getAuthority();
