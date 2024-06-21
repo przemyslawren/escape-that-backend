@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,8 +35,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/escape-rooms").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/escape-rooms/*").permitAll()
-                        .requestMatchers("/api/bookings/**").hasRole("CUSTOMER")
-                        .requestMatchers("/api/customers/**").hasRole("EMPLOYEE")
+                        .requestMatchers("/api/bookings/**").permitAll() //add role later
+                        .requestMatchers("/api/customers/**").permitAll() //add role later
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())

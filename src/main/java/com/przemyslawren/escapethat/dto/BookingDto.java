@@ -8,6 +8,7 @@ public record BookingDto(
     BookingStatus status,
     LocalDateTime startTime,
     int slotNumber,
-    boolean promoCode
+    boolean promoCode,
+    EscapeRoomSimpleDto escapeRoomSimpleDto
 ) {
 }

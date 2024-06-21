@@ -1,5 +1,6 @@
 package com.przemyslawren.escapethat.service;
 
+import com.przemyslawren.escapethat.model.CustomUserDetails;
 import com.przemyslawren.escapethat.model.Customer;
 import com.przemyslawren.escapethat.model.Employee;
 import com.przemyslawren.escapethat.repository.CustomerRepository;
@@ -25,18 +26,21 @@ public class CustomUserDetailsService implements UserDetailsService {
         Optional<Customer> customer = customerRepository.findByEmail(username);
         if (customer.isPresent()) {
             Customer user = customer.get();
-            return new User(
+            return new CustomUserDetails(
                     user.getEmail(),
                     user.getPassword(),
-                    List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
+                    user.getId(),
+                    List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
+            );
         }
 
         Optional<Employee> employee = employeeRepository.findByEmail(username);
         if (employee.isPresent()) {
             Employee user = employee.get();
-            return new User(
+            return new CustomUserDetails(
                     user.getEmail(),
                     user.getPassword(),
+                    user.getId(),
                     List.of(new SimpleGrantedAuthority("ROLE_EMPLOYEE")));
         }
 

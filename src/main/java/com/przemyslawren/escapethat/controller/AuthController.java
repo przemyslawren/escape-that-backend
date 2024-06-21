@@ -2,6 +2,7 @@ package com.przemyslawren.escapethat.controller;
 
 import com.przemyslawren.escapethat.dto.LoginRequestDto;
 import com.przemyslawren.escapethat.service.AuthService;
+import com.przemyslawren.escapethat.model.CustomUserDetails;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +31,12 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String role = userDetails.getAuthorities().stream().findFirst().get().getAuthority();
+        CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+        Long customerId = customUserDetails.getId();;
         Map<String, Object> response = new HashMap<>();
         response.put("user", userDetails);
         response.put("role", role);
+        response.put("customerId", customerId);
         return ResponseEntity.ok(response);
     }
 

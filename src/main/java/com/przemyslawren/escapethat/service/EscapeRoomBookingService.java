@@ -6,6 +6,7 @@ import com.przemyslawren.escapethat.dto.CustomerDto;
 import com.przemyslawren.escapethat.exception.ErrorCode;
 import com.przemyslawren.escapethat.exception.EscapeRoomNotFoundException;
 import com.przemyslawren.escapethat.exception.EscapeRoomRuntimeException;
+import com.przemyslawren.escapethat.mapper.BookingMapper;
 import com.przemyslawren.escapethat.model.Booking;
 import com.przemyslawren.escapethat.model.Customer;
 import com.przemyslawren.escapethat.model.EscapeRoom;
@@ -28,6 +29,7 @@ public class EscapeRoomBookingService {
     private final EscapeRoomRepository escapeRoomRepository;
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
+    private final BookingMapper bookingMapper;
 
     private List<EscapeRoom> escapeRoomExtent;
     private List<Booking> bookingExtent;
@@ -50,13 +52,9 @@ public class EscapeRoomBookingService {
     @PreDestroy
     @Transactional
     public void saveCache() {
-        for (EscapeRoom escapeRoom : escapeRoomExtent) {
-            escapeRoomRepository.save(escapeRoom);
-            bookingRepository.saveAll(escapeRoom.getBookings());
-        }
+        escapeRoomRepository.saveAll(escapeRoomExtent);
     }
 
-    //TODO: Why it adds booking twice?
     public void addBooking(Long escapeRoomId, BookingRequestDto bookingRequestDto) {
         Customer customer = customerExtent.stream()
                 .filter(c -> c.getId().equals(bookingRequestDto.customerId()))
@@ -77,7 +75,7 @@ public class EscapeRoomBookingService {
         booking.setStartTime(bookingRequestDto.startTime());
         booking.setSlotNumber(bookingRequestDto.slotNumber());
         booking.setPromoCode(bookingRequestDto.promoCode());
-        booking.setStatus(BookingStatus.PENDING);
+        booking.setStatus(BookingStatus.CONFIRMED);
 
         escapeRoom.getBookings().add(booking);
     }
@@ -89,12 +87,7 @@ public class EscapeRoomBookingService {
                 .orElseThrow(() -> new EscapeRoomNotFoundException(escapeRoomId));
 
         return escapeRoom.getBookings().stream()
-                .map(booking -> new BookingDto(
-                        booking.getId(),
-                        booking.getStatus(),
-                        booking.getStartTime(),
-                        booking.getSlotNumber(),
-                        booking.isPromoCode()))
+                .map(bookingMapper::toDto)
                 .collect(Collectors.toList());
     }
 }
