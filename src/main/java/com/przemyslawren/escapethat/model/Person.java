@@ -18,6 +18,7 @@ public abstract class Person {
     protected Long id;
     private String fullName;
     private String email;
+    private String password;
     private String phoneNumber;
     private LocalDate dateOfBirth;
 }
