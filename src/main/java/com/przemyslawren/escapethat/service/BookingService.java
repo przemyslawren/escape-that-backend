@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BookingService {
     //TODO Work on cache
+
     private final BookingRepository bookingRepository;
     private final EscapeRoomRepository escapeRoomRepository;
 
@@ -51,25 +52,10 @@ public class BookingService {
                 booking.setEscapeRoom(escapeRoom);
                 booking.setStartTime(startTime);
                 booking.setSlotNumber(slotNumber++);
-                booking.setStatus(BookingStatus.PENDING); // Initial status
+                booking.setStatus(BookingStatus.PENDING);
 
                 bookingRepository.save(booking);
             }
         }
-    }
-
-    private int generateUniqueSlotNumber(EscapeRoom escapeRoom, LocalDateTime startTime) {
-        Optional<Integer> slotNumberOpt = bookingRepository.findSlotNumberByEscapeRoomAndStartTime(escapeRoom, startTime);
-        return slotNumberOpt.orElseThrow(() -> new IllegalArgumentException("Slot number not found for the given start time"));
-    }
-
-    public Optional<Booking> findBookingByEscapeRoomIdAndSlotNumberAndStartTime(Long escapeRoomId, int slotNumber, LocalDateTime startTime) {
-        return bookingRepository.findByEscapeRoomIdAndSlotNumberAndStartTime(escapeRoomId, slotNumber, startTime);
-    }
-
-    public List<Booking> findBookingsBySlotNumberAndDate(Long escapeRoomId, int slotNumber, LocalDate date) {
-        LocalDateTime startTimeStart = date.atStartOfDay();
-        LocalDateTime startTimeEnd = date.atTime(LocalTime.MAX);
-        return bookingRepository.findBookingsBySlotNumberAndDateRange(escapeRoomId, slotNumber, startTimeStart, startTimeEnd);
     }
 }

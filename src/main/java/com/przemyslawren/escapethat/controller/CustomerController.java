@@ -1,5 +1,6 @@
 package com.przemyslawren.escapethat.controller;
 
+import com.przemyslawren.escapethat.dto.BookingDto;
 import com.przemyslawren.escapethat.dto.CustomerDto;
 import com.przemyslawren.escapethat.service.CustomerService;
 import java.util.List;
@@ -23,5 +24,10 @@ public class CustomerController {
     @GetMapping("/{id}")
     public CustomerDto getCustomerById(@PathVariable("id") Long customerId) {
         return customerService.getCustomerById(customerId);
+    }
+
+    @GetMapping("/{id}/bookings")
+    public List<BookingDto> getBookings(@PathVariable("id") Long customerId) {
+        return customerService.getCustomerBookings(customerId);
     }
 }

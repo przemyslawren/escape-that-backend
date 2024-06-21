@@ -2,12 +2,10 @@ package com.przemyslawren.escapethat.controller;
 
 import com.przemyslawren.escapethat.dto.EscapeRoomDetailDto;
 import com.przemyslawren.escapethat.dto.EscapeRoomSimpleDto;
-import com.przemyslawren.escapethat.model.EscapeRoom;
 import com.przemyslawren.escapethat.model.enums.DifficultyLevel;
 import com.przemyslawren.escapethat.service.EscapeRoomService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,8 +1,10 @@
 package com.przemyslawren.escapethat.service;
 
+import com.przemyslawren.escapethat.dto.BookingDto;
 import com.przemyslawren.escapethat.dto.CustomerDto;
 import com.przemyslawren.escapethat.exception.ErrorCode;
 import com.przemyslawren.escapethat.exception.EscapeRoomRuntimeException;
+import com.przemyslawren.escapethat.mapper.BookingMapper;
 import com.przemyslawren.escapethat.mapper.CustomerMapper;
 import com.przemyslawren.escapethat.model.Customer;
 import com.przemyslawren.escapethat.repository.CustomerRepository;
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Service;
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final BookingMapper bookingMapper;
+
     private List<Customer> customerExtent;
 
     @PostConstruct
@@ -53,5 +57,19 @@ public class CustomerService {
                         HttpStatus.BAD_REQUEST));
 
         return customerMapper.toDto(customer);
+    }
+
+    public List<BookingDto> getCustomerBookings(Long customerId) {
+        Customer customer = customerExtent
+                .stream()
+                .filter(c -> c.getId().equals(customerId)).findAny()
+                .orElseThrow(() -> new EscapeRoomRuntimeException(
+                        "Customer not found",
+                        ErrorCode.CUSTOMER_NOT_FOUND,
+                        HttpStatus.BAD_REQUEST));
+
+        return customer.getBookings().stream()
+                .map(bookingMapper::toDto)
+                .collect(Collectors.toList());
     }
 }
