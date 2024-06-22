@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class BookingService {
-    //TODO Work on cache
 
     private final BookingRepository bookingRepository;
     private final EscapeRoomRepository escapeRoomRepository;

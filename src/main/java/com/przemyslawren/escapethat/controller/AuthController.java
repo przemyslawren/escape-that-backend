@@ -29,12 +29,11 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String role = userDetails.getAuthorities().stream().findFirst().get().getAuthority();
-        CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        String role = customUserDetails.getAuthorities().stream().findFirst().get().getAuthority();
         Long customerId = customUserDetails.getId();;
         Map<String, Object> response = new HashMap<>();
-        response.put("user", userDetails);
+        response.put("user", customUserDetails);
         response.put("role", role);
         response.put("customerId", customerId);
         return ResponseEntity.ok(response);

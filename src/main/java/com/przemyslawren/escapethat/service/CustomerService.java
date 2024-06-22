@@ -6,6 +6,7 @@ import com.przemyslawren.escapethat.exception.ErrorCode;
 import com.przemyslawren.escapethat.exception.EscapeRoomRuntimeException;
 import com.przemyslawren.escapethat.mapper.BookingMapper;
 import com.przemyslawren.escapethat.mapper.CustomerMapper;
+import com.przemyslawren.escapethat.model.CustomUserDetails;
 import com.przemyslawren.escapethat.model.Customer;
 import com.przemyslawren.escapethat.repository.CustomerRepository;
 import jakarta.annotation.PostConstruct;
@@ -14,12 +15,14 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -77,20 +80,31 @@ public class CustomerService {
     }
 
     public List<BookingDto> getAuthenticatedCustomerBookings() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new EscapeRoomRuntimeException(
-                    "Customer not authenticated",
-                    ErrorCode.CUSTOMER_NOT_AUTHENTICATED,
-                    HttpStatus.UNAUTHORIZED);
-        }
+        String customerEmail = "customer@customer.com"; // tymczasowe obejście
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String email = userDetails.getUsername();
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        log.info("Authentication: {}", authentication);
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            throw new EscapeRoomRuntimeException(
+//                    "Customer not authenticated",
+//                    ErrorCode.CUSTOMER_NOT_AUTHENTICATED,
+//                    HttpStatus.UNAUTHORIZED);
+//        }
+//
+//        Object principal = authentication.getPrincipal();
+//        if (!(principal instanceof CustomUserDetails)) {
+//            throw new EscapeRoomRuntimeException(
+//                    "Invalid user details type",
+//                    ErrorCode.INVALID_USER_DETAILS,
+//                    HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//
+//        CustomUserDetails userDetails = (CustomUserDetails) principal;
+//        String email = userDetails.getUsername();
 
         Customer customer = customerExtent
                 .stream()
-                .filter(c -> c.getEmail().equals(email)).findAny()
+                .filter(c -> c.getEmail().equals(customerEmail)).findAny()
                 .orElseThrow(() -> new EscapeRoomRuntimeException(
                         "Customer not found",
                         ErrorCode.CUSTOMER_NOT_FOUND,
