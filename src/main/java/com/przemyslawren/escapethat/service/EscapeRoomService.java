@@ -43,7 +43,7 @@ public class EscapeRoomService {
                 .filter(EscapeRoom::isNew)
                 .toList();
         for (EscapeRoom room : newRooms) {
-            room.setId(null); // Ensure the ID is null so it will be generated
+            room.setId(null);
         }
         escapeRoomRepository.saveAll(newRooms);
 

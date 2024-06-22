@@ -5,6 +5,7 @@ import com.przemyslawren.escapethat.model.Customer;
 import com.przemyslawren.escapethat.model.Employee;
 import com.przemyslawren.escapethat.repository.CustomerRepository;
 import com.przemyslawren.escapethat.repository.EmployeeRepository;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,21 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final CustomerRepository customerRepository;
     private final EmployeeRepository employeeRepository;
 
+    private List<Customer> customerExtent;
+    private List<Employee> employeeExtent;
+
+    @PostConstruct
+    public void loadCache() {
+        customerExtent = customerRepository.findAll();
+        employeeExtent = employeeRepository.findAll();
+    }
+
     @Override
     public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Customer> customer = customerRepository.findByEmail(username);
+        Optional<Customer> customer = customerExtent.stream()
+                .filter(c -> c.getEmail().equals(username))
+                .findFirst();
+
         if (customer.isPresent()) {
             Customer user = customer.get();
             return new CustomUserDetails(
@@ -34,7 +47,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             );
         }
 
-        Optional<Employee> employee = employeeRepository.findByEmail(username);
+        Optional<Employee> employee = employeeExtent.stream()
+                .filter(e -> e.getEmail().equals(username))
+                .findFirst();
+        
         if (employee.isPresent()) {
             Employee user = employee.get();
             return new CustomUserDetails(

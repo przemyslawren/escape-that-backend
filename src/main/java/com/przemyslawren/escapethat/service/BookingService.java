@@ -5,6 +5,7 @@ import com.przemyslawren.escapethat.model.EscapeRoom;
 import com.przemyslawren.escapethat.model.enums.BookingStatus;
 import com.przemyslawren.escapethat.repository.BookingRepository;
 import com.przemyslawren.escapethat.repository.EscapeRoomRepository;
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -20,6 +21,9 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final EscapeRoomRepository escapeRoomRepository;
+
+    private List<Booking> bookingExtent;
+    private List<EscapeRoom> escapeRoomExtent;
 
     private static final List<LocalTime> TIME_SLOTS = List.of(
             LocalTime.of(9, 0),
@@ -37,16 +41,24 @@ public class BookingService {
             LocalTime.of(21, 0)
     );
 
+    @PostConstruct
+    public void loadCache() {
+        bookingExtent = bookingRepository.findAll();
+        escapeRoomExtent = escapeRoomRepository.findAll();
+    }
+
     @Transactional
     public void generateDailySlots(Long escapeRoomId, LocalDate date) {
-        EscapeRoom escapeRoom = escapeRoomRepository.findById(escapeRoomId)
+        EscapeRoom escapeRoom = escapeRoomExtent.stream()
+                .filter(er -> er.getId().equals(escapeRoomId))
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("EscapeRoom not found"));
 
         int slotNumber = 1;
         for (LocalTime timeSlot : TIME_SLOTS) {
             LocalDateTime startTime = LocalDateTime.of(date, timeSlot);
 
-            if (!bookingRepository.existsByEscapeRoomAndStartTime(escapeRoom, startTime)) {
+            if (!bookingExists(escapeRoom, startTime)) {
                 Booking booking = new Booking();
                 booking.setEscapeRoom(escapeRoom);
                 booking.setStartTime(startTime);
@@ -56,5 +68,10 @@ public class BookingService {
                 bookingRepository.save(booking);
             }
         }
+    }
+
+    private boolean bookingExists(EscapeRoom escapeRoom, LocalDateTime startTime) {
+        return bookingExtent.stream()
+                .anyMatch(b -> b.getEscapeRoom().equals(escapeRoom) && b.getStartTime().equals(startTime));
     }
 }
