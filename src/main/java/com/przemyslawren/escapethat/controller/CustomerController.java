@@ -26,8 +26,8 @@ public class CustomerController {
         return customerService.getCustomerById(customerId);
     }
 
-    @GetMapping("/bookings")
-    public List<BookingDto> getBookings() {
-        return customerService.getAuthenticatedCustomerBookings();
+    @GetMapping("/bookings/{id}")
+    public List<BookingDto> getBookings(@PathVariable("id") Long customerId) {
+        return customerService.getAuthenticatedCustomerBookings(customerId);
     }
 }

@@ -79,32 +79,11 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
-    public List<BookingDto> getAuthenticatedCustomerBookings() {
-        String customerEmail = "customer@customer.com"; // tymczasowe obejście
-
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        log.info("Authentication: {}", authentication);
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            throw new EscapeRoomRuntimeException(
-//                    "Customer not authenticated",
-//                    ErrorCode.CUSTOMER_NOT_AUTHENTICATED,
-//                    HttpStatus.UNAUTHORIZED);
-//        }
-//
-//        Object principal = authentication.getPrincipal();
-//        if (!(principal instanceof CustomUserDetails)) {
-//            throw new EscapeRoomRuntimeException(
-//                    "Invalid user details type",
-//                    ErrorCode.INVALID_USER_DETAILS,
-//                    HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//
-//        CustomUserDetails userDetails = (CustomUserDetails) principal;
-//        String email = userDetails.getUsername();
+    public List<BookingDto> getAuthenticatedCustomerBookings(Long id) {
 
         Customer customer = customerExtent
                 .stream()
-                .filter(c -> c.getEmail().equals(customerEmail)).findAny()
+                .filter(c -> c.getId().equals(id)).findAny()
                 .orElseThrow(() -> new EscapeRoomRuntimeException(
                         "Customer not found",
                         ErrorCode.CUSTOMER_NOT_FOUND,
